@@ -38,15 +38,17 @@ AM_CPPFLAGS = -I$(builddir) \
 	      -I$(top_srcdir)/$(OS) \
 	      -I$(top_builddir) \
 	      -I$(top_srcdir)
+
+include Makemodule.am
+
 asinfo_CPPFLAGS = $(AM_CPPFLAGS)
 asinfo_CFLAGS = $(AM_CFLAGS)
 
 asinfo_SOURCES =		\
 	arch_definitions.h	\
-	arch_includes.h		\
 	arch_interface.c	\
+	$(ARCH_AUX_FILES)	\
 	arch_interface.h	\
-	arch_personalities.h	\
 	asinfo.c		\
 	../../basic_filters.c	\
 	dispatchers.c		\

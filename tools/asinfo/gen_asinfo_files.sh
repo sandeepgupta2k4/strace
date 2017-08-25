@@ -163,7 +163,8 @@ main()
 "/${includes_file}\n\
 /${pers_file}\n\
 /Makemodule.am\n\
-/.gitignore"
+/.gitignore\n\
+/asinfo.1"
 	) > "${output}/.gitignore"
 }
 

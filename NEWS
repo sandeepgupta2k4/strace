@@ -1,6 +1,10 @@
 Noteworthy changes in release ?.?? (????-??-??)
 ===============================================
 
+* New tools
+  * Added asinfo tool that is purposed to provide information about
+    system calls and architectures.
+
 * Improvements
   * Implemented decoding of KVM_CHECK_EXTENSION ioctl command.
   * Implemented decoding of SOL_XDP socket option names.

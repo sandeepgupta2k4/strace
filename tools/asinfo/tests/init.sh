@@ -1,5 +1,6 @@
-# Automake input for asinfo.
+#!/bin/sh
 #
+# Copyright (c) 2011-2017 The strace developers.
 # Copyright (c) 2017 Edgar Kaziakhmedov <edgar.kaziakhmedov@virtuozzo.com>
 # All rights reserved.
 #
@@ -25,51 +26,71 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-SUBDIRS = . tests
+ME_="${0##*/}"
+LOG="log"
+OUT="out"
+EXP="exp"
+ASINFO="../../asinfo"
 
-bin_PROGRAMS = asinfo
-man_MANS = asinfo.1
+fail_() { warn_ "$ME_: failed test: $*"; exit 1; }
+warn_() { printf >&2 '%s\n' "$*"; }
 
-OS = linux
+run_prog()
+{
+	if [ $# -eq 0 ]; then
+		set -- "../$NAME"
+	fi
+	args="$*"
+	"$@" || {
+		rc=$?
+		if [ $rc != 0 ]; then
+			fail_ "$args failed with code $rc"
+		fi
+	}
+}
 
-AUTOMAKE_OPTIONS = subdir-objects
 
-AM_CFLAGS = $(WARN_CFLAGS)
-AM_CPPFLAGS = -I$(builddir) \
-	      -I$(top_builddir)/$(OS) \
-	      -I$(top_srcdir)/$(OS) \
-	      -I$(top_builddir) \
-	      -I$(top_srcdir)
+dump_log_and_fail_with()
+{
+	cat < "$LOG" >&2
+	fail_ "$*"
+}
 
-include Makemodule.am
+run_asinfo()
+{
+	args="$*"
+	$ASINFO "$@" 2>&1
+}
 
-asinfo_CPPFLAGS = $(AM_CPPFLAGS)
-asinfo_CFLAGS = $(AM_CFLAGS)
+match_diff()
+{
+	local output expected error
+	if [ $# -eq 0 ]; then
+		output="$LOG"
+	else
+		output="$1"; shift
+	fi
+	if [ $# -eq 0 ]; then
+		expected="$srcdir/$NAME.expected"
+	else
+		expected="$1"; shift
+	fi
+	if [ $# -eq 0 ]; then
+		error="$STRACE $args output mismatch"
+	else
+		error="$1"; shift
+	fi
 
-asinfo_SOURCES =		\
-	arch_definitions.h	\
-	arch_interface.c	\
-	$(ARCH_AUX_FILES)	\
-	arch_interface.h	\
-	asinfo.c		\
-	../../basic_filters.c	\
-	dispatchers.c		\
-	dispatchers.h		\
-	error_interface.c	\
-	error_interface.h	\
-	../../error_prints.c	\
-	../../error_prints.h	\
-	../../filter.h		\
-	../../macros.h		\
-	../../number_set.c	\
-	../../number_set.h	\
-	request_msgs.h		\
-	../../string_to_uint.h	\
-	../../string_to_uint.c	\
-	syscall_interface.c	\
-	syscall_interface.h	\
-	../../sysent_shorthand_defs.h \
-	../../sysent_shorthand_undefs.h \
-	../../xmalloc.c		\
-	../../xmalloc.h		\
-	#end of asinfo_SOURCES
+	diff -u -- "$expected" "$output" ||
+		fail_ "$error"
+}
+
+NAME="${ME_%.test}"
+TESTDIR="$NAME.dir"
+rm -rf -- "$TESTDIR"
+mkdir -- "$TESTDIR"
+cd "$TESTDIR"
+case "$srcdir" in
+	/*) ;;
+	*) srcdir="../$srcdir" ;;
+esac

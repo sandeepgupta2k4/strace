@@ -1,4 +1,4 @@
-# Automake input for asinfo.
+# Automake input for asinfo tests.
 #
 # Copyright (c) 2017 Edgar Kaziakhmedov <edgar.kaziakhmedov@virtuozzo.com>
 # All rights reserved.
@@ -25,51 +25,40 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-SUBDIRS = . tests
-
-bin_PROGRAMS = asinfo
-man_MANS = asinfo.1
-
 OS = linux
-
-AUTOMAKE_OPTIONS = subdir-objects
-
+AM_COLOR_TESTS = always
 AM_CFLAGS = $(WARN_CFLAGS)
-AM_CPPFLAGS = -I$(builddir) \
-	      -I$(top_builddir)/$(OS) \
-	      -I$(top_srcdir)/$(OS) \
+AM_CPPFLAGS = $(ARCH_MFLAGS) \
+	      -I$(builddir) \
+	      -I$(builddir)/.. \
 	      -I$(top_builddir) \
 	      -I$(top_srcdir)
+AM_LDFLAGS = $(ARCH_MFLAGS)
 
-include Makemodule.am
+check_PROGRAMS = set_arch set_mult_arch list_arch set_abi set_mult_abi \
+		 get_arch_abi get_sname get_snum com_disp_wrong_keys \
+		 multiarch_get_sname multiarch_get_snum format_output
+TESTS = set_arch.test set_mult_arch.test list_arch.test set_abi.test \
+	set_mult_abi.test get_arch_abi.test get_sname.test get_snum.test \
+	com_disp_wrong_keys.test multiarch_get_sname.test \
+	multiarch_get_snum.test format_output.test
 
-asinfo_CPPFLAGS = $(AM_CPPFLAGS)
-asinfo_CFLAGS = $(AM_CFLAGS)
+set_arch_SOURCES = set_arch.c
+set_mult_arch_SOURCES = set_mult_arch.c
+list_arch_SOURCES = list_arch.c
+set_abi_SOURCES = set_abi.c
+set_mult_abi_SOURCES = set_mult_abi.c
+get_arch_abi_SOURCES = get_arch_abi.c
+get_sname_SOURCES = get_sname.c
+get_snum_SOURCES = get_snum.c
+com_disp_wrong_keys_SOURCES = com_disp_wrong_keys.c
+multiarch_get_sname_SOURCES = multiarch_get_sname.c
+multiarch_get_snum_SOURCES = multiarch_get_snum.c
+format_output_SOURCES = format_output.c
 
-asinfo_SOURCES =		\
-	arch_definitions.h	\
-	arch_interface.c	\
-	$(ARCH_AUX_FILES)	\
-	arch_interface.h	\
-	asinfo.c		\
-	../../basic_filters.c	\
-	dispatchers.c		\
-	dispatchers.h		\
-	error_interface.c	\
-	error_interface.h	\
-	../../error_prints.c	\
-	../../error_prints.h	\
-	../../filter.h		\
-	../../macros.h		\
-	../../number_set.c	\
-	../../number_set.h	\
-	request_msgs.h		\
-	../../string_to_uint.h	\
-	../../string_to_uint.c	\
-	syscall_interface.c	\
-	syscall_interface.h	\
-	../../sysent_shorthand_defs.h \
-	../../sysent_shorthand_undefs.h \
-	../../xmalloc.c		\
-	../../xmalloc.h		\
-	#end of asinfo_SOURCES
+EXTRA_DIST = $(TESTS) init.sh ref_asinfo_output.h
+
+clean-local: clean-local-check
+.PHONY: clean-local-check
+clean-local-check:
+	-rm -rf -- $(TESTS:.test=.dir)
